@@ -1,7 +1,10 @@
 import os
+import time
 import requests
 from bs4 import BeautifulSoup
 import csv
+# Check how long does it take the script to run
+start_time = time.time()
 
 ########
 # General function to scrape news article (not quite working for any site cuz this html is not specific to the websites)
@@ -143,10 +146,14 @@ def get_recent_articles(main_url, num_articles=10):
     return article_urls
 
 # Main URL of BBC
-main_url = 'https://www.theonion.com/politics?startIndex=20'
-
+main_url = 'https://www.theonion.com/politics'
+num_articles_to_scrape = 100  #must be mutiples of 20, cuz there's 20 news on each page, we are scraping all news in one page
+max_page_index = (num_articles_to_scrape//20 + 1) * 20
+recent_articles = []
 # Get first 100 recent article URLs
-recent_articles = get_recent_articles(main_url, 100)
+for page_index in range(20, max_page_index, 20): #the first page's index is 20, every other page index increase by 20
+    page_url = main_url + "?startIndex=" + str(page_index)
+    recent_articles += get_recent_articles(page_url, 20) #20 is the max article in a single page
 
 # print all the article links that will be scraped
 print()
@@ -157,28 +164,35 @@ print(recent_articles)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Create the path for the new CSV file to be in the same directory as the script
-csv_path = os.path.join(script_dir, 'all_article_data.csv')
+csv_path = os.path.join(script_dir, 'onion_fake_news.csv')
 
 #####
 # scraping all the articles and output to csv
-#####
-# if recent_articles:
-#     # Initialize a list to hold all articles data
-#     all_articles_data = []
+####
+if recent_articles:
+    # Initialize a list to hold all articles data
+    all_articles_data = []
 
-#     # Scrape each article
-#     for url in recent_articles:
-#         article_data = scrape_article(url)
-#         if article_data:
-#             all_articles_data.append(article_data)
+    # Scrape each article
+    for index, url in enumerate(recent_articles):
+        article_data = scrape_article(url)
+        if article_data:
+            all_articles_data.append(article_data)
+            print("Article", index+1, "finished scraping")
 
-#     # Save all scraped data to CSV
-#     keys = ['Title', 'Author', 'URL', 'Body']
-#     with open(csv_path, 'w', newline='') as output_file:
-#         writer = csv.DictWriter(output_file, fieldnames=keys)
-#         writer.writeheader()
-#         writer.writerows(all_articles_data)
-#     print("CSV file generated: all_articles_data.csv")
-# else:
-#     print("No article URLs fetched.")
-###################################################
+    # Save all scraped data to CSV
+    keys = ['Title', 'Author', 'URL', 'Body']
+    with open(csv_path, 'w', newline='') as output_file:
+        writer = csv.DictWriter(output_file, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(all_articles_data)
+    print("CSV file generated: onion_fake_news.csv")
+else:
+    print("No article URLs fetched.")
+##################################################
+
+# Check how long does it take the script to run
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(f"Time taken to complete the program: {elapsed_time} seconds")
+
