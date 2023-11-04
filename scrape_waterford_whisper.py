@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+import random
 from bs4 import BeautifulSoup
 import csv
 # Check how long does it take the script to run
@@ -66,13 +67,26 @@ start_time = time.time()
 ###################################################
 
 ######
-# function to scrape single onion news
+# function to scrape single Waterford Whispers News
 ######
+
+user_agents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537',
+]
 
 def scrape_article(url):
     # Fetch the page content
-    response = requests.get(url)
-    if response.status_code != 200:
+    headers = {
+        "User-Agent": random.choice(user_agents),
+        "Referer": "https://waterfordwhispersnews.com/category/business/"
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # will raise an HTTPError if the HTTP request returned an unsuccessful status code
+    except requests.RequestException as e:
+        print(f"Failed to fetch article {url}. Error: {e}")
         return None
     
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -81,9 +95,9 @@ def scrape_article(url):
     # Note: These selectors are hypothetical. You'll need to inspect the actual HTML to find the correct ones.
     # title = soup.select_one('h1.title').text if soup.select_one('h1.title') else "N/A"
     # author = soup.select_one('span.author').text if soup.select_one('span.author') else "N/A"
-    title = soup.select_one('h1.sc-1efpnfq-0.dAlcTj').text if soup.select_one('h1.sc-1efpnfq-0.dAlcTj') else "N/A"
-    author = soup.select_one('div.ssrcss-68pt20-Text-TextContributorName').text if soup.select_one('div.ssrcss-68pt20-Text-TextContributorName') else "N/A"
-    body_text_blocks = soup.select('p.sc-77igqf-0.fnnahv')
+    title = soup.select_one('div.s_header_wraper div.s-post-header h1[itemprop="headline"]').text if soup.select_one('div.s_header_wraper div.s-post-header h1[itemprop="headline"]') else "N/A"
+    author = soup.select_one('div.post-author[itemprop="author"] a').text if soup.select_one('div.post-author[itemprop="author"] a') else "N/A"
+    body_text_blocks = soup.select('div.article-content[itemprop="articleBody"] p')
     body = ' '.join([block.text for block in body_text_blocks]) if body_text_blocks else "N/A"
     
     return {
@@ -94,12 +108,12 @@ def scrape_article(url):
     }
 ###################################################
 
-#####
-# Run the function to get content from one url
-#####
+#######
+# Run the function to get content from one news article (this function works for any website, cuz it's using abstraction)
+#######
 
 # # URL to scrape
-# url_to_scrape = "https://www.theonion.com/pros-and-cons-of-keeping-senile-politicians-in-office-1850900125"
+# url_to_scrape = "https://waterfordwhispersnews.com/2012/05/10/jobbridge-scheme-extended-by-30000-places-as-government-opens-cotton-picking-plantation-in-leitrim/"
 
 # # Scrape the article
 # article_data = scrape_article(url_to_scrape)
@@ -113,7 +127,7 @@ def scrape_article(url):
 # script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # # Create the path for the new CSV file to be in the same directory as the script
-# csv_path = os.path.join(script_dir, 'article_data.csv')
+# csv_path = os.path.join(script_dir, 'single_article_data_for_testing.csv')
 
 # # Save to CSV if scraping was successful
 # if article_data:
@@ -122,38 +136,61 @@ def scrape_article(url):
 #         writer = csv.DictWriter(output_file, fieldnames=keys)
 #         writer.writeheader()
 #         writer.writerow(article_data)
-#     print("CSV file generated: article_data.csv")
+#     print("CSV file generated: single_article_data_for_testing.csv")
+
+
 
 
 ###################################################
 #######
-# function to get urls of multiple news articles given main news website
+# FUNCTION to get urls of multiple news articles given main news website (one page)
 #######
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.3",
+}
 
 def get_recent_articles(main_url, num_articles=10):
     print(f"Fetching recent articles from {main_url}...")
-    response = requests.get(main_url)
-    if response.status_code != 200:
-        print("Failed to fetch main page.")
+    
+    try:
+        response = requests.get(main_url, headers=headers)
+        response.raise_for_status()  # will raise an HTTPError if the HTTP request returned an unsuccessful status code
+    except requests.RequestException as e:
+        print(f"Failed to fetch main page. Error: {e}")
         return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    article_links = soup.select('div.sc-cw4lnv-5.dYIPCV a.sc-1out364-0.dPMosf.js_link')[:num_articles]  # Replace 'YOUR_ARTICLE_LINK_SELECTOR'
+    article_links = soup.select('h4.title a')[:num_articles]  # Replace 'the part inside .select(...)'
     article_urls = [link['href'] for link in article_links]
     
     print(f"Fetched {len(article_urls)} article URLs.")
     
     return article_urls
 
-# Main URL of BBC
-main_url = 'https://www.theonion.com/politics'
-num_articles_to_scrape = 100  #must be mutiples of 20, cuz there's 20 news on each page, we are scraping all news in one page
-max_page_index = (num_articles_to_scrape//20 + 1) * 20
+### Testing printing all urls for a single home page
+# page_url = 'https://waterfordwhispersnews.com/category/business/page/19/'
+# print(get_recent_articles(page_url, 10))
+
+
+###################################################
+#######
+# GET and PRINT urls of multiple news articles given main news website (multiple pages)
+#######
+
+# Main URL of Waterford Whispers News
+main_url = 'https://waterfordwhispersnews.com/category/business/'
+num_articles_to_scrape = 500  #must be mutiples of 10, cuz there's 10 news on each page, we are scraping all news in one page
+max_page_index = (num_articles_to_scrape//10 + 1)
 recent_articles = []
-# Get first 100 recent article URLs
-for page_index in range(20, max_page_index, 20): #the first page's index is 20, every other page index increase by 20
-    page_url = main_url + "?startIndex=" + str(page_index)
-    recent_articles += get_recent_articles(page_url, 20) #20 is the max article in a single page
+# Get first "num_articles_to_scrape" recent article URLs
+for page_index in range(1, max_page_index, 1): #the first page's index is 1, every other page index increase by 1
+    if page_index == 1:
+        page_url = "https://waterfordwhispersnews.com/category/business/"
+    else:
+        page_url = main_url + "page/" + str(page_index) + "/"
+    print("Got URLs for page", page_index)
+    recent_articles += get_recent_articles(page_url, 10) #10 is the max article in a single page
 
 # print all the article links that will be scraped
 print()
@@ -164,8 +201,10 @@ print(recent_articles)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Create the path for the new CSV file to be in the same directory as the script
-csv_path = os.path.join(script_dir, 'onion_fake_news.csv')
+csv_path = os.path.join(script_dir, 'waterford_whispers_fake_news.csv')
 
+
+##################################################
 #####
 # scraping all the articles and output to csv
 ####
@@ -175,10 +214,13 @@ if recent_articles:
 
     # Scrape each article
     for index, url in enumerate(recent_articles):
+        # time.sleep(1)  # sleep for 1 second
         article_data = scrape_article(url)
         if article_data:
             all_articles_data.append(article_data)
-            print("Article", index+1, "finished scraping")
+            print(f"Article {index+1} finished scraping")
+        else:
+            print(f"Article {index+1} failed to scrape")
 
     # Save all scraped data to CSV
     keys = ['Title', 'Author', 'URL', 'Body']
@@ -186,13 +228,14 @@ if recent_articles:
         writer = csv.DictWriter(output_file, fieldnames=keys)
         writer.writeheader()
         writer.writerows(all_articles_data)
-    print("CSV file generated: onion_fake_news.csv")
+    print("CSV file generated: waterford_whispers_fake_news.csv")
 else:
     print("No article URLs fetched.")
 ##################################################
+
+
 
 # Check how long does it take the script to run
 end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Time taken to complete the program: {elapsed_time} seconds")
-
