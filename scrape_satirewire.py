@@ -73,18 +73,18 @@ CONFIG = {
         'Mozilla/5.0 ...',
         'Mozilla/5.0 ...',
     ],
-    "referer": "https://www.satirewire.com/category/business/", # for bypass bot detection, same or more general than "main_url"
-    "main_url": "https://www.satirewire.com/category/business/", # main page where we want to scrape all articles
-    "first_page_url": "https://www.satirewire.com/category/business/", # the first page that we want to scrape
+    "referer": "https://www.satirewire.com/category/", # for bypass bot detection, same or more general than "main_url"
+    "main_url": "https://www.satirewire.com/category/business/biz-briefs/", # main page where we want to scrape all articles
+    "first_page_url": "https://www.satirewire.com/category/business/biz-briefs/", # the first page that we want to scrape
     "test_single_page_url": "https://www.satirewire.com/category/business/", # a random page that contains many articles
     "test_single_article_url": "https://www.satirewire.com/report-confirms-poorest-half-of-world-probably-not-even-trying/", # a random article
     "title_selector": "h1.entry-title", # article title
     "author_selector": "span.entry-author a", # article author
-    "body_selector": "div.entry-content p", # article content
+    "body_selector": "div.entry-content", # article content
     "article_selector": "div.entry-header h2.entry-title a", # the html tags for an article on a category page
-    "num_articles_to_scrape": 180, # number of aricles, must be multiple of the number of articles in a page
+    "num_articles_to_scrape": 80, # number of aricles, must be multiple of the number of articles in a page
     "articles_per_page": 10, # how many articles in a page
-    "csv_filename": "satirewire_biz_fake_news.csv" # export file name
+    "csv_filename": "satirewire_scifi_briefs_fake_news.csv" # export file name
 }
 ###################################################
 
@@ -119,8 +119,11 @@ def scrape_article(url):
     # author = soup.select_one('span.author').text if soup.select_one('span.author') else "N/A"
     title = soup.select_one(CONFIG['title_selector']).text if soup.select_one(CONFIG['title_selector']) else "N/A"
     author = soup.select_one(CONFIG['author_selector']).text if soup.select_one(CONFIG['author_selector']) else "N/A"
-    body_text_blocks = soup.select(CONFIG['body_selector'])
-    body = ' '.join([block.text for block in body_text_blocks]) if body_text_blocks else "N/A"
+    body_text_blocks = soup.select(CONFIG['body_selector']) # for all websites
+    body = ' '.join([block.text for block in body_text_blocks]) if body_text_blocks else "N/A" # for all websites
+    # entry_content = soup.select_one(CONFIG['body_selector']) # for satire wire, might not work for others
+    # body_text_blocks = entry_content.find_all(['p', 'span'], text=True) if entry_content else [] # for satire wire, might not work for others
+    # body = ' '.join(block.get_text(strip=True) for block in body_text_blocks) if body_text_blocks else "N/A" # for satire wire, might not work for others
     
     return {
         'Title': title,
