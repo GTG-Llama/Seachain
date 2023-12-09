@@ -1,0 +1,90 @@
+{%extends "base.html" %}
+
+{% block title %} Similarity Checker {% endblock %}
+
+
+
+{% block content %}
+<h1 align = "center">News Similarity Checker</h1>
+<!--
+<ul class = "list-group list-group-flush" id = "notes">
+    <div>
+    {% for link,title in total %} 
+    <li class = "list-group-item" >
+        <div class = "homediv1" style = "display:flex; height:10px"> 
+        <a style = 'width:495px' href = {{link}}> {{link}}  </a>
+        <div> {{title}} </div>
+        </div>
+    </li>
+    {% endfor %}
+    </div>
+</ul>
+</br>
+</br>
+-->
+
+<div class="loader-container" {% if loading %} style="display: block;" {% else %} style="display: none;" {% endif %}>
+    <div class="loader-overlay"></div>
+    <div class="loader-content">
+      <p>Loading...</p>
+    </div>
+</div>
+
+<div class="ss-container">
+
+
+    <div class="ss-left">
+        <form method = 'POST'> <!-- sends it to the home page as a POST method-->
+            <div>
+                <p>Enter your article title here: </p>
+                <textarea name="searchQuery" id = "searchQuery" class = "form-control"></textarea>
+            </div>
+
+        </br>
+            <div class="ss-longerdiv">
+                <p>Enter your article content here: </p>
+                <textarea name="articleContent" id = "articleContent" class = "form-control ss-longertextarea"></textarea>
+            </div>
+        </br>
+            <div align = "center">
+                <button type = "submit"  class = "btn btn-primary">Check News Similarity</button>
+            </div>
+        </form>
+    </div>
+    <div class="ss-right">
+        {% if prompt_response %}
+            <div>
+                <p id="prompt-response">
+                    {{ prompt_response }}
+                </p>
+            </div>
+            {% if links %}
+                <div>
+                    <p>
+                        Here are a few articles that might help you further look!
+                    </p>
+                    <ul class="list-group list-group-flush" id="notes">
+                        {% for i in range(links|length) %}
+                            <li class="list-group-item">
+                                <a href="{{ links[i] }}">{{ title[i] }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+  
+            {% endif %}
+        {% else %}
+            <p id="prompt-response">
+                Awaiting an article!
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+
+
+
+
+
+
+{% endblock %}
