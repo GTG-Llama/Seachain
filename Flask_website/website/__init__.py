@@ -34,5 +34,5 @@ def create_app():
         #Unhash this and run if you are adding new things to database
         #db.drop_all()
         db.create_all()
-    
+
     return app 
