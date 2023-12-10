@@ -5,6 +5,7 @@ from . import db
 from .webscrape import *
 from pretty_html_table import build_table
 from .similarity_checker import *
+import pickle
 
 views = Blueprint("views", __name__)
 
@@ -52,6 +53,20 @@ def sim_score():
         
 
     return render_template("sim_score.html", user = current_user, prompt_response = prompt_response, loading = loading, links = links, title = title, total = zip(links, title))
+
+@views.route('/lstm_model', methods = ['GET', 'POST']) #LSTM
+def lstm():
+    loading = True
+    results = False
+    if request.method == "POST":
+        searchQuery = request.form.get('searchQuery').upper()
+        articleContent = request.form.get('articleContent').upper()
+        loading = False
+        #throw article content model.predict, 
+        #results = True or False
+    return render_template("lstm.html", user = current_user, results = results, loading = loading)
+
+
 
 @views.route('/delete/<int:id>') #unused route for testing
 def delete(id):
