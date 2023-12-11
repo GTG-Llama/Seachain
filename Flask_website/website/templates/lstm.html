@@ -1,39 +1,18 @@
-{%extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %} Similarity Checker {% endblock %}
+{% block title %} Reliability Checker {% endblock %}
 
 
 
 {% block content %}
-<h1 align = "center">News Similarity Checker</h1>
-<!--
-<ul class = "list-group list-group-flush" id = "notes">
-    <div>
-    {% for link,title in total %} 
-    <li class = "list-group-item" >
-        <div class = "homediv1" style = "display:flex; height:10px"> 
-        <a style = 'width:495px' href = {{link}}> {{link}}  </a>
-        <div> {{title}} </div>
-        </div>
-    </li>
-    {% endfor %}
-    </div>
-</ul>
-</br>
-</br>
--->
-
-
+<h1 align = "center">News Reliability Checker</h1>
 <div class="ss-container">
-
-
     <div class="ss-left">
         <form method = 'POST'> <!-- sends it to the home page as a POST method-->
             <div>
                 <p>Enter your article title here: </p>
                 <textarea name="searchQuery" id = "searchQuery" class = "form-control"></textarea>
             </div>
-
         </br>
             <div class="ss-longerdiv">
                 <p>Enter your article content here: </p>
@@ -41,27 +20,20 @@
             </div>
         </br>
             <div align = "center">
-                <button type = "submit"  class = "btn btn-primary">Check News Accuracy</button>
+                <button type = "submit"  class = "btn btn-primary">Check News Reliability</button>
             </div>
         </form>
     </div>
     <div class="ss-right">
-        {% if loading %} 
-        <div>
-            Loading...
-        </div>
-        {% else %}
+        {% if results %}
         <div>
             {{ results }}
         </div>
+        {% else %}
+        <div>
+            Awaiting an article!
+        </div>
         {% endif %}
     </div>
-
 </div>
-
-
-
-
-
-
 {% endblock %}

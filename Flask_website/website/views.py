@@ -53,15 +53,13 @@ def sim_score():
 @views.route('/lstm_model', methods = ['GET', 'POST']) #LSTM
 def lstm():
     model = tf.keras.models.load_model('saved_model/my_model')
-    loading = True
     results = False
     if request.method == "POST":
         searchQuery = request.form.get('searchQuery').upper()
         articleContent = request.form.get('articleContent').upper()
-        loading = False
         prediction = model.predict([" ".join([searchQuery, articleContent])])
         results = "Fake!" if prediction > 0.5 else "Real!"
-    return render_template("lstm.html", user = current_user, results = results, loading = loading)
+    return render_template("lstm.html", user = current_user, results = results)
 
 @views.route('/delete/<int:id>') #unused route for testing
 def delete(id):
