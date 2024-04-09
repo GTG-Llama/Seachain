@@ -13,7 +13,6 @@ from langchain.chains import LLMChain
 from langchain_community.callbacks import get_openai_callback
 from langchain_openai import OpenAI
 
-
 # logging
 logging.basicConfig(filename="logging/prompt_user_query.log",
                     level=logging.DEBUG,

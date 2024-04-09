@@ -20,11 +20,15 @@ from langchain.agents.agent_toolkits import (
     VectorStoreInfo
 )
 
-'''input variables for the vector store and document'''
-article_path = 'annualreport.pdf'
+import streamlit as st
+
+st.title('Personalized knowledge base for newbie investors')
+
+prompt = st.text_input('Input you query here, enter to submit:')
+
+article_path = './pages/annualreport.pdf'
 vector_store_name = "Annual Report Macquarie Group 2021"
 vector_store_description = "a annual report as a pdf"
-''''''
 
 os.environ['OPENAI_API_KEY'] = openapi_key
 
@@ -54,17 +58,22 @@ agent_executor = create_vectorstore_agent(
     verbose=True
 )
 
+st.write('Remark: the only document in knowledge base is a sample annual report from Macquarie Group 2021.')
+st.write("future work: add in a section to upload document into the knowledge base for analysis.")
 
-# example usage: each running below costs token
-def main():
+prompt_sample = "what is the revenue of Macquarie Group in 2021?"
+
+if prompt:
     with get_openai_callback() as cb:
-        prompt = "tell me about the future prospects of Macquarie Group"
         response = agent_executor.run(prompt)
+        st.write(response)
         print("response:\n", response)
         
-        search = store.similarity_search_with_score(prompt)
-        print("search:\n", search)
-        print("page content:\n", search[0][0].page_content)
+        with st.expander('Document Similarity Search'):
+            search = store.similarity_search_with_score(prompt)
+            st.write(search[0][0].page_content) 
+            print("search:\n", search)
+            print("page content:\n", search[0][0].page_content)
 
         # prompt = "where is Germany located at?"
         # response = agent_executor.run(prompt)
@@ -76,5 +85,3 @@ def main():
         # trace token usage
         print(cb)
 
-if __name__ == "__main__":
-    main()
