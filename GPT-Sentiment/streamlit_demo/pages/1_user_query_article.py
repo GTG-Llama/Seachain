@@ -62,6 +62,7 @@ article = st.text_area('Input the article here:')
 
 
 user_query_text = "How does this affect the economic prospects of the Singapore?"
+user_qeury_sample= "How does this affect Macquarie Group?"
 
 # article from Reuters, https://finance.yahoo.com/news/treasurys-yellen-says-funding-bill-060844566.html
 title_sample = "Treasury's Yellen says funding bill allows lending of $21 bln to IMF trust"
